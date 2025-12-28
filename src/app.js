@@ -2,19 +2,21 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
-const pool = require("./config/db");
+const authRoutes = require("./routes/authRoutes");
+const authMiddleware = require("./middleware/authMiddleware");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use("/api/auth", authRoutes);
+
 app.get("/", (req, res) => {
   res.send("Job Application Tracker API is running");
 });
 
-app.get("/db-test", async (req, res) => {
-  const result = await pool.query("SELECT NOW()");
-  res.json({ dbTime: result.rows[0].now });
+app.get("/protected", authMiddleware, (req, res) => {
+    res.json({message: "Protected route accessed", user: req.user});
 });
 
 const PORT = process.env.PORT || 3001;
